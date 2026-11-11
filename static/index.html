@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#101923">
+    <title>Cyber Sygnał</title>
+    <link rel="stylesheet" href="/style.css">
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">LOKALNY PRZEGLĄD</p>
+          <h1>Cyber <span>Sygnał</span></h1>
+          <p class="intro">Najważniejsze wieści o bezpieczeństwie, bez szumu.</p>
+        </div>
+        <button id="refresh" class="button button-primary" type="button">Odśwież RSS</button>
+      </header>
+
+      <section class="controls" aria-label="Filtrowanie wpisów">
+        <label class="search">
+          <span class="sr-only">Szukaj w tytułach i opisach</span>
+          <input id="query" type="search" placeholder="Szukaj: wyciek, phishing, CVE…">
+        </label>
+        <label class="category-select">
+          <span class="sr-only">Kategoria</span>
+          <select id="category">
+            <option value="">Wszystkie tematy</option>
+            <option>Phishing</option>
+            <option>Wycieki</option>
+            <option>Podatności</option>
+            <option>Ataki</option>
+            <option>Inne</option>
+          </select>
+        </label>
+      </section>
+
+      <section class="status-row" aria-live="polite">
+        <p id="status">Ładuję wpisy…</p>
+        <p id="count"></p>
+      </section>
+      <section id="errors" class="errors" aria-live="polite"></section>
+      <section id="items" class="items" aria-label="Wpisy z kanałów RSS"></section>
+      <footer>
+        <span>Dane pobierane z publicznych kanałów RSS.</span>
+        <span>Głos zależy od przeglądarki i zainstalowanych głosów.</span>
+      </footer>
+    </main>
+  </body>
+</html>
