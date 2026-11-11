@@ -4,36 +4,71 @@
 
 Lekki, lokalny przegląd wiadomości o cyberbezpieczeństwie. Pobiera publiczne
 kanały RSS, filtruje wpisy po słowach i pozwala przeczytać je głosem dostępnym
-w przeglądarce.
+w przeglądarce. Wszystko działa lokalnie na Twoim komputerze — nie ma kont,
+kluczy API ani telemetrii.
 
-## Uruchomienie
+---
 
-Wymaga Pythona 3.10+; nie wymaga instalowania paczek ani konta:
+## 🚀 Uruchomienie
+
+Wymaga Pythona 3.10+; nie wymaga instalowania żadnych paczek z PyPI ani konta:
 
 ```bash
+git clone https://github.com/technoporada/cyber-sygnal.git
+cd cyber-sygnal
 python3 app.py
 ```
 
-Otwórz <http://127.0.0.1:8777> i kliknij **Odśwież RSS**. Serwer nasłuchuje
-wyłącznie na komputerze lokalnym. Zatrzymasz go przez `Ctrl+C`.
+Otwórz <http://127.0.0.1:8777> w przeglądarce. Serwer nasłuchuje wyłącznie na
+`127.0.0.1` (tylko Twój komputer). Zatrzymasz go przez `Ctrl+C`.
 
-## Co już działa
+Po otwarciu strony wpisy z kanałów RSS pobierają się automatycznie w tle — nie
+musisz klikać „Odśwież RSS”, choć przycisk ten działa i wymusza ponowne
+pobranie najnowszych wpisów.
 
-- RSS z Niebezpiecznika i Sekuraka
-- wyszukiwanie i proste kategorie: phishing, wycieki, podatności, ataki
-- przycisk czytania tytułu i opisu przez głos przeglądarki
-- komunikaty, gdy źródła RSS są niedostępne
+---
 
-Nie pobiera całych artykułów ani załączników. Wpisy RSS są wyświetlane jako
-zwykły tekst, a link do oryginału otwiera się w nowej karcie. Głos zależy od
-przeglądarki i głosów zainstalowanych w systemie; aplikacja nie wysyła tekstu
-do zewnętrznej usługi TTS.
+## 📰 Co działa
 
-## Prywatność i ograniczenia
+| Funkcja | Opis |
+|---------|------|
+| Kanały RSS | Niebezpiecznik i Sekurak (pobierane automatycznie przy starcie) |
+| Kategoryzacja | Phishing, Wycieki, Podatności, Ataki, Inne (na podstawie słów kluczowych) |
+| Wyszukiwanie | Filtruj wpisy po tytule, opisie i źródle |
+| Czytanie na głos | Przeglądarka czyta tytuł i opis (TTS lokalnie, bez wysyłania tekstu z zewnątrz) |
+| Linki do oryginałów | Kliknij tytuł, aby otworzyć artykuł w nowej karcie |
+| Błędy źródeł | Komunikaty na stronie, gdy kanał RSS jest niedostępny |
 
-Aplikacja pobiera RSS wyłącznie po kliknięciu odświeżenia. Nie ma kluczy API,
-konta, telemetrii ani lokalnej bazy danych. Kanały RSS są źródłem nagłówków,
-nie pełną bazą podatności ani gwarancją wykrycia zagrożeń. Kategoryzacja opiera
-się na prostych słowach kluczowych, więc może się mylić.
+Aplikacja nie pobiera całych artykułów ani załączników — tylko nagłówki, streszczenia i linki do oryginałów.
+
+---
+
+## 🔐 Bezpieczeństwo
+
+- Aplikacja nasłuchuje wyłącznie na `127.0.0.1` — nie jest dostępna z sieci zewnętrznej.
+- Nie ma kluczy API, kont użytkowników, telemetrii ani lokalnej bazy danych.
+- Kanały RSS są pobierane przez HTTPS z zaufanych domen (`feeds.feedburner.com`, `sekurak.pl`).
+- Serwer odrzuca każde przekierowanie poza dozwolony host źródła.
+- Głos (TTS) działa lokalnie w przeglądarce — tekst nie jest wysyłany do żadnej zewnętrznej usługi.
+
+---
+
+## 📦 Wersje / Release
+
+| Wersja | Data | Co nowego |
+|--------|------|-----------|
+| `v0.2.0` | 2026-11-12 | Auto-pobieranie RSS przy starcie serwera, naprawiony sparse checkout (przywrócono `static/` i `tests/`), serwer nasłuchuje tylko na `127.0.0.1` |
+| `v0.1.0` | 2026-11-11 | Pierwsza wersja: RSS z Niebezpiecznika i Sekurak, kategoryzacja, TTS, prosty serwer HTTP |
+
+Wszystkie release są otagowane na GitHubie:  
+https://github.com/technoporada/cyber-sygnal/releases
+
+---
+
+## 🔒 Prywatność i ograniczenia
+
+Aplikacja pobiera RSS wyłącznie po starcie serwera lub po kliknięciu „Odśwież RSS”. Nie ma kluczy API, konta, telemetrii ani lokalnej bazy danych. Kanały RSS są źródłem nagłówków, nie pełną bazą podatności ani gwarancją wykrycia zagrożeń. Kategoryzacja opiera się na prostych słowach kluczowych, więc może się mylić.
+
+Głos zależy od przeglądarki i zainstalowanych w systemie głosów TTS. Aplikacja nie wysyła tekstu do zewnętrznej usługi.
 
 Lokalne pliki danych, środowiska Pythona i bazy są ignorowane przez Git.
