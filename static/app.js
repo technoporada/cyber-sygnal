@@ -139,6 +139,6 @@ async function refresh() {
 elements.refresh.addEventListener("click", refresh);
 elements.query.addEventListener("input", renderItems);
 elements.category.addEventListener("change", renderItems);
-loadItems().catch((error) => {
+refresh().catch((error) => {
   elements.status.textContent = error.message || "Nie udało się załadować strony.";
 });

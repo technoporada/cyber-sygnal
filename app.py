@@ -308,7 +308,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Uruchom lokalny Cyber Sygnał.")
-    parser.add_argument("--port", type=int, default=8000)
+    parser.add_argument("--port", type=int, default=8777)
     args = parser.parse_args()
     server = ThreadingHTTPServer(("127.0.0.1", args.port), RequestHandler)
     print(f"Cyber Sygnał działa lokalnie: http://127.0.0.1:{args.port}")
@@ -320,5 +320,24 @@ def main() -> None:
         server.server_close()
 
 
+def _background_refresh() -> None:
+    """Pobierz kanały RSS w tle tuż po starcie serwera."""
+    try:
+        STORE.refresh()
+    except Exception:  # pragma: no cover - nie blokujemy startu serwera
+        pass
+
+
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Uruchom lokalny Cyber Sygnał.")
+    parser.add_argument("--port", type=int, default=8777)
+    args = parser.parse_args()
+    server = ThreadingHTTPServer(("127.0.0.1", args.port), RequestHandler)
+    threading.Thread(target=_background_refresh, daemon=True).start()
+    print(f"Cyber Sygnał działa lokalnie: http://127.0.0.1:{args.port}")
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        print("\nZamykanie serwera.")
+    finally:
+        server.server_close()

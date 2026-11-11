@@ -14,7 +14,7 @@ Wymaga Pythona 3.10+; nie wymaga instalowania paczek ani konta:
 python3 app.py
 ```
 
-Otwórz <http://127.0.0.1:8000> i kliknij **Odśwież RSS**. Serwer nasłuchuje
+Otwórz <http://127.0.0.1:8777> i kliknij **Odśwież RSS**. Serwer nasłuchuje
 wyłącznie na komputerze lokalnym. Zatrzymasz go przez `Ctrl+C`.
 
 ## Co już działa
