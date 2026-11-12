@@ -1,6 +1,10 @@
+import json
+import os
+import tempfile
 import unittest
+from pathlib import Path
 
-from app import classify, parse_feed, _date_order
+from app import _date_order, _load_stored_items, _save_stored_items, classify, parse_feed
 
 
 class FeedParsingTests(unittest.TestCase):
@@ -137,6 +141,62 @@ class FeedParsingTests(unittest.TestCase):
 
     def test_date_order_invalid(self):
         self.assertEqual(_date_order("not-a-date"), 0.0)
+
+    def test_save_and_load_stored_items(self):
+        """Zapis i odczyt z pliku JSON działają w obie strony."""
+        items = [
+            {
+                "title": "Testowy wyciek",
+                "link": "https://example.test/wyciek-1",
+                "summary": "Wyciek danych",
+                "published": "Mon, 09 Nov 2026 08:00:00 GMT",
+                "source": "Test",
+                "category": "Wycieki",
+            }
+        ]
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # Podmieniamy ścieżki na czas testu
+            import app
+
+            orig_data_dir = app.DATA_DIR
+            orig_storage_file = app.STORAGE_FILE
+            app.DATA_DIR = Path(tmpdir)
+            app.STORAGE_FILE = Path(tmpdir) / "items.json"
+            try:
+                _save_stored_items(items)
+                loaded = _load_stored_items()
+                self.assertEqual(len(loaded), 1)
+                self.assertEqual(loaded[0]["title"], "Testowy wyciek")
+                self.assertEqual(loaded[0]["category"], "Wycieki")
+            finally:
+                app.DATA_DIR = orig_data_dir
+                app.STORAGE_FILE = orig_storage_file
+
+    def test_load_stored_items_missing_file(self):
+        """Brak pliku zwraca pustą listę, nie rzuca wyjątku."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            import app
+
+            orig_storage_file = app.STORAGE_FILE
+            app.STORAGE_FILE = Path(tmpdir) / "nieistnieje.json"
+            try:
+                self.assertEqual(_load_stored_items(), [])
+            finally:
+                app.STORAGE_FILE = orig_storage_file
+
+    def test_load_stored_items_corrupt_json(self):
+        """Uszkodzony JSON zwraca pustą listę, nie rzuca wyjątku."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            import app
+
+            orig_storage_file = app.STORAGE_FILE
+            storage = Path(tmpdir) / "items.json"
+            storage.write_text("to nie jest json", encoding="utf-8")
+            app.STORAGE_FILE = storage
+            try:
+                self.assertEqual(_load_stored_items(), [])
+            finally:
+                app.STORAGE_FILE = orig_storage_file
 
 
 if __name__ == "__main__":

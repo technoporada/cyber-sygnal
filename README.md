@@ -57,6 +57,8 @@ Aplikacja nie pobiera całych artykułów ani załączników — tylko nagłówk
 
 | Wersja | Data | Co nowego |
 |--------|------|-----------|
+| `v0.4.0` | 2026-11-12 | Lokalne zapisywanie wpisów do `data/items.json` — wycieki i inne wpisy nie giną po odświeżeniu, endpoint `/api/leaks` zwraca tylko wycieki |
+| `v0.3.0` | 2026-11-12 | 17 testów jednostkowych (testy kategorii, deduplikacji, sortowania po dacie, zapis/odczyt z pliku) |
 | `v0.2.0` | 2026-11-12 | Auto-pobieranie RSS przy starcie serwera, naprawiony sparse checkout (przywrócono `static/` i `tests/`), serwer nasłuchuje tylko na `127.0.0.1` |
 | `v0.1.0` | 2026-11-11 | Pierwsza wersja: RSS z Niebezpiecznika i Sekurak, kategoryzacja, TTS, prosty serwer HTTP |
 

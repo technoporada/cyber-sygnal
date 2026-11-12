@@ -33,6 +33,9 @@ SOURCES = (
     },
 )
 
+DATA_DIR = Path(__file__).parent / "data"
+STORAGE_FILE = DATA_DIR / "items.json"
+
 CATEGORY_KEYWORDS = {
     "Phishing": (
         "phishing",
@@ -127,6 +130,26 @@ def _date_order(value: str) -> float:
         return 0.0
 
 
+def _load_stored_items() -> list[dict[str, str]]:
+    """Wczytaj wcześniej zapisane wpisy z pliku JSON."""
+    try:
+        if STORAGE_FILE.exists():
+            data = json.loads(STORAGE_FILE.read_text(encoding="utf-8"))
+            if isinstance(data, list):
+                return data
+    except (OSError, json.JSONDecodeError):
+        pass
+    return []
+
+
+def _save_stored_items(items: list[dict[str, str]]) -> None:
+    """Zapisz wpisy do pliku JSON (lokalna baza wycieków i innych wpisów)."""
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    STORAGE_FILE.write_text(
+        json.dumps(items, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+
+
 def parse_feed(data: bytes, source: str) -> list[dict[str, str]]:
     upper_data = data.upper()
     if b"<!DOCTYPE" in upper_data or b"<!ENTITY" in upper_data:
@@ -204,7 +227,7 @@ class FeedStore:
     def __init__(self) -> None:
         self.lock = threading.Lock()
         self.refresh_lock = threading.Lock()
-        self.items: list[dict[str, str]] = []
+        self.items: list[dict[str, str]] = _load_stored_items()
         self.errors: list[dict[str, str]] = []
         self.updated_at: str | None = None
 
@@ -219,19 +242,24 @@ class FeedStore:
 
     def refresh(self) -> dict[str, object]:
         with self.refresh_lock:
-            items: list[dict[str, str]] = []
+            fetched: list[dict[str, str]] = []
             errors: list[dict[str, str]] = []
             for source in SOURCES:
                 try:
-                    items.extend(fetch_source(source))
+                    fetched.extend(fetch_source(source))
                 except (ET.ParseError, OSError, TimeoutError, ValueError, URLError) as exc:
                     errors.append({"source": source["name"], "message": str(exc)})
 
-            unique_items: dict[str, dict[str, str]] = {}
-            for item in items:
-                unique_items.setdefault(item["link"], item)
+            # Scal nowe wpisy z zapisowanymi lokalnie (bez duplikatów po linku).
+            # Dzięki temu wycieki i inne ważne wpisy nie giną po kolejnym odświeżeniu.
+            merged: dict[str, dict[str, str]] = {}
+            for item in self.items:
+                merged[item["link"]] = item
+            for item in fetched:
+                merged.setdefault(item["link"], item)
+
             ordered_items = sorted(
-                unique_items.values(),
+                merged.values(),
                 key=lambda item: _date_order(item["published"]),
                 reverse=True,
             )
@@ -239,6 +267,7 @@ class FeedStore:
                 self.items = ordered_items
                 self.errors = errors
                 self.updated_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
+            _save_stored_items(ordered_items)
             return self.snapshot()
 
 
@@ -293,6 +322,10 @@ class RequestHandler(BaseHTTPRequestHandler):
             self._send(200, "text/css; charset=utf-8", body)
         elif path == "/api/items":
             self._send_json(200, STORE.snapshot())
+        elif path == "/api/leaks":
+            snapshot = STORE.snapshot()
+            leaks = [item for item in snapshot["items"] if item.get("category") == "Wycieki"]
+            self._send_json(200, {"items": leaks, "updated_at": snapshot["updated_at"]})
         else:
             self._send_json(404, {"error": "Nie znaleziono strony."})
 
